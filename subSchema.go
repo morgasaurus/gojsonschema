@@ -32,6 +32,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/morgasaurus/decimal"
 	"github.com/xeipuuv/gojsonreference"
 )
 
@@ -104,7 +105,7 @@ type subSchema struct {
 	propertiesChildren          []*subSchema
 
 	// validation : number / integer
-	multipleOf       *big.Float
+	multipleOf       decimal.Decimal
 	maximum          *big.Float
 	exclusiveMaximum bool
 	minimum          *big.Float

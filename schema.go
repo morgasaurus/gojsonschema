@@ -28,11 +28,11 @@ package gojsonschema
 
 import (
 	"errors"
-	"math/big"
 	"reflect"
 	"regexp"
 	"text/template"
 
+	"github.com/morgasaurus/decimal"
 	"github.com/xeipuuv/gojsonreference"
 )
 
@@ -504,8 +504,8 @@ func (d *Schema) parseSchema(documentNode interface{}, currentSchema *subSchema)
 	// validation : number / integer
 
 	if existsMapKey(m, KEY_MULTIPLE_OF) {
-		multipleOfValue := mustBeNumber(m[KEY_MULTIPLE_OF])
-		if multipleOfValue == nil {
+		multipleOfValue, err := mustBeDecimal(m[KEY_MULTIPLE_OF])
+		if err != nil {
 			return errors.New(formatErrorDescription(
 				Locale.InvalidType(),
 				ErrorDetails{
@@ -514,7 +514,7 @@ func (d *Schema) parseSchema(documentNode interface{}, currentSchema *subSchema)
 				},
 			))
 		}
-		if multipleOfValue.Cmp(big.NewFloat(0)) <= 0 {
+		if multipleOfValue.LessThanOrEqual(decimal.RequireFromString("0")) {
 			return errors.New(formatErrorDescription(
 				Locale.GreaterThanZero(),
 				ErrorDetails{"number": KEY_MULTIPLE_OF},

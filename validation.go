@@ -27,12 +27,15 @@ package gojsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/morgasaurus/decimal"
 )
 
 func Validate(ls JSONLoader, ld JSONLoader) (*Result, error) {
@@ -845,11 +848,13 @@ func (v *subSchema) validateNumber(currentSubSchema *subSchema, value interface{
 
 	number := value.(json.Number)
 	float64Value, _ := new(big.Float).SetString(string(number))
+	decValue := decimal.RequireFromString(string(number))
 
 	// multipleOf:
-	if currentSubSchema.multipleOf != nil {
+	if !currentSubSchema.multipleOf.Equal(decimal.RequireFromString("0")) {
 
-		if q := new(big.Float).Quo(float64Value, currentSubSchema.multipleOf); !q.IsInt() {
+		if q := decValue.Div(currentSubSchema.multipleOf); !q.Floor().Equal(q) {
+			fmt.Printf("%v / %v = %v\n", float64Value, currentSubSchema.multipleOf, q)
 			result.addInternalError(
 				new(MultipleOfError),
 				context,

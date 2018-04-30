@@ -27,10 +27,13 @@ package gojsonschema
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"math/big"
 	"reflect"
+
+	"github.com/morgasaurus/decimal"
 )
 
 func isKind(what interface{}, kinds ...reflect.Kind) bool {
@@ -173,6 +176,15 @@ func mustBeNumber(what interface{}) *big.Float {
 
 	return nil
 
+}
+
+func mustBeDecimal(what interface{}) (decimal.Decimal, error) {
+	if isJsonNumber(what) {
+		number := what.(json.Number)
+		dec, err := decimal.NewFromString(string(number))
+		return dec, err
+	}
+	return decimal.RequireFromString("0"), errors.New("value was not a JSON number")
 }
 
 // formats a number so that it is displayed as the smallest string possible
